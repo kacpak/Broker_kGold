@@ -1,0 +1,18 @@
+## Interface: 60200
+## Title: Broker |cff69ccf0k|cffe1a500Gold|r
+## Notes: Tracks your gold
+## Author: Mateusz Kasprzak
+## Version: 1.0
+## SavedVariables: kGoldDB
+
+## X-License: Apache 2.0
+## X-Category: Miscellaneous
+
+## LoadManagers: AddonLoader
+## X-LoadOn-Always: delayed
+
+libs\LibStub.lua
+libs\CallbackHandler-1.0.lua
+libs\LibDataBroker-1.1.lua
+
+Broker_kGold.lua
