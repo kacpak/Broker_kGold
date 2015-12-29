@@ -25,17 +25,21 @@ local Spent		= 0
 
 ------------------------------------------
 -- Helper Functions
-local function MoneyFormat(copper, isProfit)
-	local moneyGold = floor(abs(copper / 10000))
-	local moneySilver = floor(abs(mod(copper / 100, 100)))
-	local moneyCopper = floor(abs(mod(copper, 100)))
-	if (isProfit > 0 and copper ~= 0) then
-		return string.format("|cff00ff00 %d|cffffcc00g |cff00ff00%d|cffc0c0c0s |cff00ff00%d|cff996600c|r", moneyGold, moneySilver, moneyCopper)
-	elseif (isProfit < 0 and copper ~= 0) then
-		return string.format("|cffff0000%d|cffffcc00g |cffff0000%d|cffc0c0c0s |cffff0000%d|cff996600c|r", moneyGold, moneySilver, moneyCopper)
-	else
-		return string.format("%d|cffffcc00g |cffffffff%d|cffc0c0c0s |cffffffff%d|cff996600c|r", moneyGold, moneySilver, moneyCopper)
+local function GetCoinString(copper, colorChange)
+	local colorChange = colorChange or false
+	local isProfit = copper >= 0
+	local copper = abs(copper)
+
+	local mCopper = mod(copper, 100)
+	local mSilver = floor(mod(copper / 100, 100))
+	local mGold = floor(copper / 10000)
+
+	local numberColor = "|cffffffff"
+	if (colorChange and copper > 0) then
+		numberColor = isProfit and "|cff00ff00" or "|cffff0000"
 	end
+
+	return numberColor..mGold.."|cffffcc00g "..numberColor..mSilver.."|cffc0c0c0s "..numberColor..mCopper.."|cff996600c|r"
 end
 ------------------------------------------
 	
@@ -46,7 +50,7 @@ local dataobj = ldb:GetDataObjectByName("kGold") or ldb:NewDataObject("kGold", {
 	OnClick = function(self, button)
 		if button == "RightButton" and IsShiftKeyDown() then
 			kGoldDB = nil;
-			UpdateData(self)
+			OnEvent(self)
 		else
 			ToggleAllBags()
 		end
@@ -54,13 +58,13 @@ local dataobj = ldb:GetDataObjectByName("kGold") or ldb:NewDataObject("kGold", {
 	OnTooltipShow = function(tip)
 		-- Dane o obecnej sesji
 		tip:AddLine("Session")
-		tip:AddDoubleLine("Earned", MoneyFormat(Profit, 1), 1, 1, 1, 1, 1, 1)
-		tip:AddDoubleLine("Spent", MoneyFormat(Spent, -1), 1, 1, 1, 1, 1, 1)
 		if Profit < Spent then
-			tip:AddDoubleLine("Deficit: ", MoneyFormat(Spent - Profit, -1), 1, 0, 0, 1, 1, 1)
+			tip:AddDoubleLine("Deficit", GetCoinString(Profit - Spent, true), 1, 0, 0, 1, 1, 1)
 		elseif (Profit - Spent) > 0 then
-			tip:AddDoubleLine("Profit: ", MoneyFormat(Profit - Spent, 1), 0, 1, 0, 1, 1, 1)
+			tip:AddDoubleLine("Profit", GetCoinString(Profit - Spent, true), 0, 1, 0, 1, 1, 1)
 		end
+		tip:AddDoubleLine("Earned", GetCoinString(Profit, true), 1, 1, 1, 1, 1, 1)
+		tip:AddDoubleLine("Spent", GetCoinString(-Spent, true), 1, 1, 1, 1, 1, 1)
 		tip:AddLine(" ")
 		
 		-- Dane o wszystkich postaciach na realmie
@@ -68,7 +72,7 @@ local dataobj = ldb:GetDataObjectByName("kGold") or ldb:NewDataObject("kGold", {
 		tip:AddLine("Characters")
 		for k,_ in pairs(kGoldDB[playerRealm]) do
 			if kGoldDB[playerRealm][k] then
-				tip:AddDoubleLine(k, MoneyFormat(kGoldDB[playerRealm][k], 0), 1, 1, 1, 1, 1, 1)
+				tip:AddDoubleLine(k, GetCoinString(kGoldDB[playerRealm][k]), 1, 1, 1, 1, 1, 1)
 				totalGold = totalGold + kGoldDB[playerRealm][k]
 			end
 		end
@@ -76,16 +80,16 @@ local dataobj = ldb:GetDataObjectByName("kGold") or ldb:NewDataObject("kGold", {
 		
 		-- Total Gold
 		tip:AddLine("Realm")
-		tip:AddDoubleLine("Total: ", MoneyFormat(totalGold, 0), 1, 1, 1, 1, 1, 1)
+		tip:AddDoubleLine("Total", GetCoinString(totalGold), 1, 1, 1, 1, 1, 1)
 		
 		-- Currencies
 		for i = 1, MAX_WATCHED_TOKENS do
-			local name, count, extraCurrencyType, icon, itemID = GetBackpackCurrencyInfo(i)
+			local name, count, icon, _ = GetBackpackCurrencyInfo(i)
 			if name and i == 1 then
 				tip:AddLine(" ")
 				tip:AddLine("Currencies")
 			end
-			if name and count then tip:AddDoubleLine(name, count, 1, 1, 1) end
+			if name and count then tip:AddDoubleLine("|T"..icon..":0|t"..name, count, 1, 1, 1) end
 		end
 		
 		-- How to
@@ -112,7 +116,7 @@ function OnEvent(self, event, ...)
 		Profit = Profit + Change
 	end
 
-	dataobj.text = MoneyFormat(NewMoney, 0)
+	dataobj.text = GetCoinString(NewMoney)
 
 	kGoldDB[playerRealm][playerName] = NewMoney
 end
