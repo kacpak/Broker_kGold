@@ -2,7 +2,7 @@
 ## Title: Broker |cff69ccf0k|cffe1a500Gold|r
 ## Notes: Tracks your gold
 ## Author: Mateusz Kasprzak
-## Version: 1.0
+## Version: 1.0.1
 ## SavedVariables: kGoldDB
 
 ## X-License: Apache 2.0

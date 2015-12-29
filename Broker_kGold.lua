@@ -96,7 +96,7 @@ local dataobj = ldb:GetDataObjectByName("kGold") or ldb:NewDataObject("kGold", {
 })
 
 -- Update Text when needed
-function UpdateData(self, event, ...)
+function OnEvent(self, event, ...)
 	if not IsLoggedIn() then return end
 	local NewMoney = GetMoney();
 	kGoldDB = kGoldDB or { };
@@ -119,16 +119,10 @@ end
 
 -- Register Events
 local f = CreateFrame("Frame")
-f:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
+f:SetScript("OnEvent", OnEvent)
 f:RegisterEvent("PLAYER_LOGIN")
 f:RegisterEvent("PLAYER_MONEY")
 f:RegisterEvent("SEND_MAIL_MONEY_CHANGED")
 f:RegisterEvent("SEND_MAIL_COD_CHANGED")
 f:RegisterEvent("PLAYER_TRADE_MONEY")
 f:RegisterEvent("TRADE_MONEY_CHANGED")
-f.PLAYER_LOGIN = UpdateData
-f.PLAYER_MONEY = UpdateData
-f.SEND_MAIL_MONEY_CHANGED = UpdateData
-f.SEND_MAIL_COD_CHANGED = UpdateData
-f.PLAYER_TRADE_MONEY = UpdateData
-f.TRADE_MONEY_CHANGED = UpdateData
